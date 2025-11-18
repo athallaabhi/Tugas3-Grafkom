@@ -56,6 +56,11 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Touch optimization */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .container {
@@ -785,20 +790,25 @@ body {
   .parameter-panel {
     position: static;
     max-height: none;
+    overflow-y: visible;
   }
 
   .simulation-canvas {
     height: 500px;
   }
+
+  .team-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
   .logo {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .nav-menu {
@@ -807,7 +817,8 @@ body {
   }
 
   .nav-link {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
   }
 
   .section-title {
@@ -815,23 +826,48 @@ body {
   }
 
   .simulation-canvas {
-    height: 400px;
+    height: 350px;
   }
 
   .canvas-controls {
     flex-wrap: wrap;
+    gap: var(--spacing-sm);
   }
 
   .control-btn {
     flex: 1;
-    min-width: 120px;
+    min-width: 100px;
     justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
+  }
+
+  .theory-content {
+    gap: var(--spacing-md);
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-sm);
+  }
+
+  .logo {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .nav-link {
+    padding: var(--spacing-sm);
+    font-size: 0.85rem;
   }
 
   .theory-card,
@@ -840,7 +876,8 @@ body {
   }
 
   .formula {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    padding: var(--spacing-sm);
   }
 
   .input-group {
@@ -849,6 +886,31 @@ body {
 
   .parameter-input {
     width: 100%;
+  }
+
+  .simulation-canvas {
+    height: 300px;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .control-btn {
+    min-width: 80px;
+    padding: var(--spacing-sm);
+  }
+
+  .member-card {
+    padding: var(--spacing-md);
+  }
+
+  .member-name {
+    font-size: 1rem;
+  }
+
+  .member-nrp {
+    font-size: 0.85rem;
   }
 }
 
