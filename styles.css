@@ -99,7 +99,7 @@ body {
 }
 
 .its-logo img {
-  width: 100%; 
+  width: 100%;
   height: auto;
 }
 
@@ -902,4 +902,27 @@ body {
 }
 .theory-card:nth-child(3) {
   animation-delay: 0.3s;
+}
+
+/* Modal animations for GLB and GLBB results */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
 }

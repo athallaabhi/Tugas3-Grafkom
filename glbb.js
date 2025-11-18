@@ -6,7 +6,8 @@
 
 // GLBB Scene Variables (separate from pendulum and GLB)
 let glbbScene, glbbCamera, glbbRenderer;
-let glbbVehicleGroup, glbbWheels = [];
+let glbbVehicleGroup,
+  glbbWheels = [];
 let glbbTrackLine;
 
 // GLBB Simulation state
@@ -259,7 +260,8 @@ function updateGLBB(deltaTime) {
 
   // GLBB equations: v = v0 + at, s = v0*t + 0.5*a*t²
   glbbVelocity = initialVelocity + acceleration * glbbTime;
-  glbbPosition = initialVelocity * glbbTime + 0.5 * acceleration * glbbTime * glbbTime;
+  glbbPosition =
+    initialVelocity * glbbTime + 0.5 * acceleration * glbbTime * glbbTime;
 
   // Track maximum position reached
   if (Math.abs(glbbPosition) > Math.abs(glbbMaxPosition)) {
@@ -414,6 +416,42 @@ function updateGLBBCalculatedValues() {
 }
 
 // ===================================
+// Reset GLBB Simulation Function
+// ===================================
+function resetGLBBSimulation() {
+  isGLBBSimulating = false;
+  isGLBBPaused = false;
+  glbbTime = 0;
+  glbbPosition = 0;
+  glbbVelocity = initialVelocity;
+  glbbMaxPosition = 0;
+  glbbSimulationComplete = false;
+
+  // Reset vehicle position
+  if (glbbVehicleGroup) {
+    glbbVehicleGroup.position.x = -glbbTrackLength / 2;
+  }
+
+  // Reset wheel rotations
+  glbbWheels.forEach((wheel) => {
+    wheel.rotation.y = 0;
+  });
+
+  // Reset camera
+  if (glbbCamera) {
+    glbbCamera.position.set(10, 6, 15);
+    glbbCamera.lookAt(0, 0, 0);
+  }
+
+  updateGLBBCalculatedValues();
+  if (glbbRenderer && glbbScene && glbbCamera) {
+    glbbRenderer.render(glbbScene, glbbCamera);
+  }
+
+  console.log("GLBB simulation reset");
+}
+
+// ===================================
 // GLBB Control Buttons
 // ===================================
 function setupGLBBControls() {
@@ -442,35 +480,7 @@ function setupGLBBControls() {
 
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
-      isGLBBSimulating = false;
-      isGLBBPaused = false;
-      glbbTime = 0;
-      glbbPosition = 0;
-      glbbVelocity = initialVelocity;
-      glbbMaxPosition = 0;
-      glbbSimulationComplete = false;
-
-      // Reset vehicle position
-      if (glbbVehicleGroup) {
-        glbbVehicleGroup.position.x = -glbbTrackLength / 2;
-      }
-
-      // Reset wheel rotations
-      glbbWheels.forEach((wheel) => {
-        wheel.rotation.y = 0;
-      });
-
-      // Reset camera
-      if (glbbCamera) {
-        glbbCamera.position.set(10, 6, 15);
-        glbbCamera.lookAt(0, 0, 0);
-      }
-
-      updateGLBBCalculatedValues();
-      if (glbbRenderer && glbbScene && glbbCamera) {
-        glbbRenderer.render(glbbScene, glbbCamera);
-      }
-
+      resetGLBBSimulation();
       showGLBBNotification("Simulasi GLBB direset");
     });
   }
@@ -518,7 +528,7 @@ function showGLBBCalculationResults() {
   const finalPosition = glbbPosition;
   const finalVelocity = glbbVelocity;
   const maxPosition = glbbMaxPosition;
-  
+
   // Create results modal
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -535,22 +545,36 @@ function showGLBBCalculationResults() {
     width: 90%;
     animation: slideIn 0.3s ease-out;
   `;
-  
+
   let resultsHTML = `
     <h2 style="color: #1e40af; margin-top: 0; margin-bottom: 20px; font-size: 24px;">Hasil Simulasi GLBB</h2>
     <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
       <h3 style="color: #374151; margin-top: 0; font-size: 18px;">Parameter Awal:</h3>
-      <p style="margin: 8px 0; color: #1f2937;">• Kecepatan Awal (v₀): <strong>${initialVelocity.toFixed(2)} m/s</strong></p>
-      <p style="margin: 8px 0; color: #1f2937;">• Percepatan (a): <strong>${acceleration.toFixed(2)} m/s²</strong></p>
-      <p style="margin: 8px 0; color: #1f2937;">• Jari-jari Roda (r): <strong>${glbbWheelRadius.toFixed(2)} m</strong></p>
+      <p style="margin: 8px 0; color: #1f2937;">• Kecepatan Awal (v₀): <strong>${initialVelocity.toFixed(
+        2
+      )} m/s</strong></p>
+      <p style="margin: 8px 0; color: #1f2937;">• Percepatan (a): <strong>${acceleration.toFixed(
+        2
+      )} m/s²</strong></p>
+      <p style="margin: 8px 0; color: #1f2937;">• Jari-jari Roda (r): <strong>${glbbWheelRadius.toFixed(
+        2
+      )} m</strong></p>
     </div>
     
     <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
       <h3 style="color: #075985; margin-top: 0; font-size: 18px;">Hasil Akhir:</h3>
-      <p style="margin: 8px 0; color: #0c4a6e;">• Waktu Total: <strong>${finalTime.toFixed(2)} s</strong></p>
-      <p style="margin: 8px 0; color: #0c4a6e;">• Posisi Akhir: <strong>${finalPosition.toFixed(2)} m</strong></p>
-      <p style="margin: 8px 0; color: #0c4a6e;">• Kecepatan Akhir: <strong>${finalVelocity.toFixed(2)} m/s</strong></p>
-      <p style="margin: 8px 0; color: #0c4a6e;">• Jarak Maksimum: <strong>${maxPosition.toFixed(2)} m</strong></p>
+      <p style="margin: 8px 0; color: #0c4a6e;">• Waktu Total: <strong>${finalTime.toFixed(
+        2
+      )} s</strong></p>
+      <p style="margin: 8px 0; color: #0c4a6e;">• Posisi Akhir: <strong>${finalPosition.toFixed(
+        2
+      )} m</strong></p>
+      <p style="margin: 8px 0; color: #0c4a6e;">• Kecepatan Akhir: <strong>${finalVelocity.toFixed(
+        2
+      )} m/s</strong></p>
+      <p style="margin: 8px 0; color: #0c4a6e;">• Jarak Maksimum: <strong>${maxPosition.toFixed(
+        2
+      )} m</strong></p>
     </div>
     
     <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -573,9 +597,9 @@ function showGLBBCalculationResults() {
       transition: transform 0.2s;
     ">Tutup</button>
   `;
-  
+
   modal.innerHTML = resultsHTML;
-  
+
   // Add backdrop
   const backdrop = document.createElement("div");
   backdrop.style.cssText = `
@@ -587,10 +611,10 @@ function showGLBBCalculationResults() {
     background: rgba(0, 0, 0, 0.5);
     z-index: 1999;
   `;
-  
+
   document.body.appendChild(backdrop);
   document.body.appendChild(modal);
-  
+
   // Close button handler
   const closeBtn = document.getElementById("closeResultsBtn");
   closeBtn.addEventListener("click", () => {
@@ -600,9 +624,13 @@ function showGLBBCalculationResults() {
     setTimeout(() => {
       if (modal.parentNode) document.body.removeChild(modal);
       if (backdrop.parentNode) document.body.removeChild(backdrop);
+
+      // Auto-reset simulation after closing modal
+      resetGLBBSimulation();
+      showGLBBNotification("Simulasi telah direset");
     }, 300);
   });
-  
+
   // Close on backdrop click
   backdrop.addEventListener("click", () => {
     closeBtn.click();

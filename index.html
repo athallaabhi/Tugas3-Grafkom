@@ -12,10 +12,11 @@
     <header class="header">
       <div class="container">
         <h1 class="logo">
-            <div class="its-logo">
-                <img src="images/image.png" alt="Logo">
-            </div>
-            Simulasi Gerak Fisika</h1>
+          <div class="its-logo">
+            <img src="images/image.png" alt="Logo" />
+          </div>
+          Simulasi Gerak Fisika
+        </h1>
         <p class="subtitle">Tugas 3 Pengganti UTS - Grafika Komputer</p>
       </div>
     </header>
@@ -28,19 +29,12 @@
             <a href="#pendulum" class="nav-link">Gerak Osilasi Pendulum</a>
           </li>
           <li class="nav-item">
-            <a href="#projectile" class="nav-link">Gerak Parabola</a>
+            <a href="#glb" class="nav-link">Gerak Lurus Beraturan (GLB)</a>
           </li>
           <li class="nav-item">
-            <a href="#circular" class="nav-link">Gerak Melingkar</a>
-          </li>
-          <li class="nav-item">
-            <a href="#harmonic" class="nav-link">Gerak Harmonik Sederhana</a>
-          </li>
-          <li class="nav-item">
-            <a href="#wave" class="nav-link">Gerak Gelombang</a>
-          </li>
-          <li class="nav-item">
-            <a href="#glbb" class="nav-link">Gerak Lurus Berubah Beraturan</a>
+            <a href="#glbb" class="nav-link"
+              >Gerak Lurus Berubah Beraturan (GLBB)</a
+            >
           </li>
         </ul>
       </div>
@@ -289,11 +283,202 @@
       </div>
     </main>
 
+    <!-- GLB Section -->
+    <section id="glbSection" class="motion-section" style="display: none">
+      <div class="container">
+        <h2 class="section-title">Gerak Lurus Beraturan (GLB)</h2>
+
+        <!-- Simulation Section -->
+        <section class="simulation-section">
+          <div class="simulation-container">
+            <!-- Canvas Area -->
+            <div class="canvas-wrapper">
+              <div id="glbContainer" class="simulation-canvas"></div>
+              <div class="canvas-controls">
+                <button class="control-btn start-btn" id="glbStartBtn">
+                  <span class="btn-icon">▶</span> Mulai
+                </button>
+                <button class="control-btn pause-btn" id="glbPauseBtn">
+                  <span class="btn-icon">⏸</span> Jeda
+                </button>
+                <button class="control-btn reset-btn" id="glbResetBtn">
+                  <span class="btn-icon">↻</span> Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameter Panel -->
+            <div class="parameter-panel">
+              <h3 class="panel-title">Parameter Simulasi</h3>
+
+              <div class="parameter-group">
+                <div class="parameter-item">
+                  <label for="glbVelocity" class="parameter-label">
+                    <span class="label-text">Kecepatan Konstan (v)</span>
+                    <span class="label-unit">meter/detik (m/s)</span>
+                  </label>
+                  <div class="input-group">
+                    <input
+                      type="range"
+                      id="glbVelocity"
+                      class="parameter-slider"
+                      min="1"
+                      max="15"
+                      value="5"
+                      step="0.5"
+                    />
+                    <input
+                      type="number"
+                      id="glbVelocityValue"
+                      class="parameter-input"
+                      min="1"
+                      max="15"
+                      value="5"
+                      step="0.5"
+                    />
+                  </div>
+                  <p class="parameter-description">
+                    Kecepatan kendaraan yang tetap konstan (tidak ada
+                    percepatan)
+                  </p>
+                </div>
+
+                <div class="parameter-item">
+                  <label for="glbWheelRadius" class="parameter-label">
+                    <span class="label-text">Jari-jari Roda</span>
+                    <span class="label-unit">meter (m)</span>
+                  </label>
+                  <div class="input-group">
+                    <input
+                      type="range"
+                      id="glbWheelRadius"
+                      class="parameter-slider"
+                      min="0.1"
+                      max="0.5"
+                      value="0.2"
+                      step="0.05"
+                    />
+                    <input
+                      type="number"
+                      id="glbWheelRadiusValue"
+                      class="parameter-input"
+                      min="0.1"
+                      max="0.5"
+                      value="0.2"
+                      step="0.05"
+                    />
+                  </div>
+                  <p class="parameter-description">
+                    Ukuran jari-jari roda kendaraan
+                  </p>
+                </div>
+
+                <div class="parameter-divider"></div>
+
+                <div class="calculated-values">
+                  <h4 class="calculated-title">Hasil Akhir</h4>
+                  <div class="calculated-item">
+                    <span class="calc-label">Jarak (s):</span>
+                    <span class="calc-value" id="glbDistanceValue">0.00 m</span>
+                  </div>
+                  <div class="calculated-item">
+                    <span class="calc-label">Waktu (t):</span>
+                    <span class="calc-value" id="glbTimeValue">0.00 s</span>
+                  </div>
+                  <div class="calculated-item">
+                    <span class="calc-label">Kecepatan (v):</span>
+                    <span class="calc-value" id="glbVelocityValue"
+                      >5.00 m/s</span
+                    >
+                  </div>
+                  <div class="calculated-item">
+                    <span class="calc-label">Rotasi Roda:</span>
+                    <span class="calc-value" id="glbRotationValue"
+                      >0.00 putaran</span
+                    >
+                  </div>
+                </div>
+
+                <div class="parameter-divider"></div>
+
+                <div class="info-box">
+                  <h4 class="info-title">💡 Informasi</h4>
+                  <p class="info-text">
+                    GLB adalah gerak lurus dengan kecepatan konstan (tanpa
+                    percepatan). Rumus: s = v × t. Perhatikan bahwa kecepatan
+                    tidak berubah sepanjang perjalanan.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Theory Section -->
+        <section class="theory-section">
+          <h2 class="section-title">Teori</h2>
+          <div class="theory-content">
+            <div class="theory-card">
+              <h3>Pengertian</h3>
+              <p>
+                Gerak Lurus Beraturan (GLB) adalah gerak suatu benda pada
+                lintasan lurus dengan kecepatan konstan (tetap). Pada GLB, benda
+                menempuh jarak yang sama dalam selang waktu yang sama, tanpa
+                adanya percepatan atau perlambatan.
+              </p>
+            </div>
+
+            <div class="theory-card">
+              <h3>Rumus-Rumus Penting</h3>
+              <div class="formula-group">
+                <div class="formula-item">
+                  <h4>Jarak Tempuh (s)</h4>
+                  <div class="formula">s = v × t</div>
+                  <p class="formula-description">
+                    di mana: s = jarak (m), v = kecepatan konstan (m/s), t =
+                    waktu (s)
+                  </p>
+                </div>
+
+                <div class="formula-item">
+                  <h4>Kecepatan (v)</h4>
+                  <div class="formula">v = s / t</div>
+                  <p class="formula-description">
+                    Kecepatan adalah hasil bagi jarak dengan waktu tempuh
+                  </p>
+                </div>
+
+                <div class="formula-item">
+                  <h4>Waktu Tempuh (t)</h4>
+                  <div class="formula">t = s / v</div>
+                  <p class="formula-description">
+                    Waktu yang diperlukan untuk menempuh jarak tertentu
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="theory-card">
+              <h3>Karakteristik GLB</h3>
+              <ul class="characteristics-list">
+                <li>Kecepatan benda selalu tetap (konstan)</li>
+                <li>Percepatan = 0 (tidak ada percepatan)</li>
+                <li>Lintasan berupa garis lurus</li>
+                <li>Jarak berbanding lurus dengan waktu</li>
+                <li>Grafik v-t berupa garis horizontal</li>
+                <li>Grafik s-t berupa garis lurus miring</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
     <!-- GLBB Section -->
-    <section id="glbbSection" class="motion-section" style="display: none;">
+    <section id="glbbSection" class="motion-section" style="display: none">
       <div class="container">
         <h2 class="section-title">Gerak Lurus Berubah Beraturan (GLBB)</h2>
-        
+
         <!-- Simulation Section -->
         <section class="simulation-section">
           <div class="simulation-container">
@@ -374,7 +559,8 @@
                     />
                   </div>
                   <p class="parameter-description">
-                    Percepatan konstan (positif = percepatan, negatif = perlambatan)
+                    Percepatan konstan (positif = percepatan, negatif =
+                    perlambatan)
                   </p>
                 </div>
 
@@ -414,7 +600,9 @@
                   <h4 class="calculated-title">Nilai Terhitung</h4>
                   <div class="calculated-item">
                     <span class="calc-label">Jarak Tempuh:</span>
-                    <span class="calc-value" id="glbbDistanceValue">0.00 m</span>
+                    <span class="calc-value" id="glbbDistanceValue"
+                      >0.00 m</span
+                    >
                   </div>
                   <div class="calculated-item">
                     <span class="calc-label">Waktu Tempuh:</span>
@@ -422,11 +610,15 @@
                   </div>
                   <div class="calculated-item">
                     <span class="calc-label">Kecepatan Saat Ini:</span>
-                    <span class="calc-value" id="glbbVelocityValue">0.00 m/s</span>
+                    <span class="calc-value" id="glbbVelocityValue"
+                      >0.00 m/s</span
+                    >
                   </div>
                   <div class="calculated-item">
                     <span class="calc-label">Rotasi Roda:</span>
-                    <span class="calc-value" id="glbbRotationValue">0.00 rad</span>
+                    <span class="calc-value" id="glbbRotationValue"
+                      >0.00 rad</span
+                    >
                   </div>
                 </div>
 
@@ -435,9 +627,10 @@
                 <div class="info-box">
                   <h4 class="info-title">💡 Informasi</h4>
                   <p class="info-text">
-                    Gerak Lurus Berubah Beraturan adalah gerak dengan percepatan tetap.
-                    Perhatikan bagaimana kecepatan berubah secara linear terhadap waktu.
-                    Gunakan percepatan negatif untuk simulasi perlambatan (pengereman).
+                    Gerak Lurus Berubah Beraturan adalah gerak dengan percepatan
+                    tetap. Perhatikan bagaimana kecepatan berubah secara linear
+                    terhadap waktu. Gunakan percepatan negatif untuk simulasi
+                    perlambatan (pengereman).
                   </p>
                 </div>
               </div>
@@ -452,9 +645,9 @@
             <div class="theory-card">
               <h3>Pengertian</h3>
               <p>
-                Gerak Lurus Berubah Beraturan (GLBB) adalah gerak benda pada lintasan lurus 
-                dengan percepatan tetap (konstan). Pada GLBB, kecepatan benda berubah secara 
-                teratur setiap satuan waktu.
+                Gerak Lurus Berubah Beraturan (GLBB) adalah gerak benda pada
+                lintasan lurus dengan percepatan tetap (konstan). Pada GLBB,
+                kecepatan benda berubah secara teratur setiap satuan waktu.
               </p>
             </div>
 
@@ -465,8 +658,8 @@
                   <h4>Kecepatan Akhir (v)</h4>
                   <div class="formula">v = v₀ + at</div>
                   <p class="formula-description">
-                    di mana: v = kecepatan akhir (m/s), v₀ = kecepatan awal (m/s), 
-                    a = percepatan (m/s²), t = waktu (s)
+                    di mana: v = kecepatan akhir (m/s), v₀ = kecepatan awal
+                    (m/s), a = percepatan (m/s²), t = waktu (s)
                   </p>
                 </div>
 
@@ -490,7 +683,8 @@
                   <h4>Rotasi Roda (θ)</h4>
                   <div class="formula">θ = s / r</div>
                   <p class="formula-description">
-                    di mana: θ = sudut rotasi (rad), s = jarak (m), r = jari-jari roda (m)
+                    di mana: θ = sudut rotasi (rad), s = jarak (m), r =
+                    jari-jari roda (m)
                   </p>
                 </div>
               </div>
@@ -539,56 +733,108 @@
     </footer>
 
     <script src="pendulum.js"></script>
+    <script src="glb.js"></script>
     <script src="glbb.js"></script>
     <script src="script.js"></script>
     <script>
       // Navigation handler
-      document.addEventListener('DOMContentLoaded', function() {
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pendulumSection = document.querySelector('.main-content');
-        const glbbSection = document.getElementById('glbbSection');
-        
-        navLinks.forEach(link => {
-          link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            
-            if (href === '#pendulum') {
+      document.addEventListener("DOMContentLoaded", function () {
+        const navLinks = document.querySelectorAll(".nav-link");
+        const pendulumSection = document.querySelector(".main-content");
+        const glbSection = document.getElementById("glbSection");
+        const glbbSection = document.getElementById("glbbSection");
+
+        navLinks.forEach((link) => {
+          link.addEventListener("click", function (e) {
+            const href = this.getAttribute("href");
+
+            if (href === "#pendulum") {
               e.preventDefault();
               // Remove active from all
-              document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-              this.parentElement.classList.add('active');
-              
+              document
+                .querySelectorAll(".nav-item")
+                .forEach((item) => item.classList.remove("active"));
+              this.parentElement.classList.add("active");
+
               // Show pendulum, hide others
-              if (pendulumSection) pendulumSection.style.display = 'block';
-              if (glbbSection) glbbSection.style.display = 'none';
-              window.location.hash = 'pendulum';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            else if (href === '#glbb') {
+              if (pendulumSection) pendulumSection.style.display = "block";
+              if (glbSection) glbSection.style.display = "none";
+              if (glbbSection) glbbSection.style.display = "none";
+              window.location.hash = "pendulum";
+
+              // Force pendulum canvas to re-render after becoming visible
+              setTimeout(() => {
+                if (
+                  typeof renderer !== "undefined" &&
+                  renderer &&
+                  typeof scene !== "undefined" &&
+                  typeof camera !== "undefined"
+                ) {
+                  // Trigger resize to recalculate canvas dimensions
+                  const container =
+                    document.getElementById("pendulumContainer");
+                  if (container) {
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+                    if (camera) {
+                      camera.aspect = width / height;
+                      camera.updateProjectionMatrix();
+                    }
+                    if (renderer) {
+                      renderer.setSize(width, height);
+                      renderer.render(scene, camera);
+                    }
+                  }
+                }
+              }, 50);
+
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else if (href === "#glb") {
               e.preventDefault();
               // Remove active from all
-              document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-              this.parentElement.classList.add('active');
-              
+              document
+                .querySelectorAll(".nav-item")
+                .forEach((item) => item.classList.remove("active"));
+              this.parentElement.classList.add("active");
+
+              // Show GLB, hide others
+              if (pendulumSection) pendulumSection.style.display = "none";
+              if (glbSection) glbSection.style.display = "block";
+              if (glbbSection) glbbSection.style.display = "none";
+              window.location.hash = "glb";
+
+              // Initialize GLB if not already initialized
+              setTimeout(() => {
+                if (typeof initGLB === "function" && !glbRenderer) {
+                  initGLB();
+                }
+                window.dispatchEvent(new Event("resize"));
+              }, 100);
+
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else if (href === "#glbb") {
+              e.preventDefault();
+              // Remove active from all
+              document
+                .querySelectorAll(".nav-item")
+                .forEach((item) => item.classList.remove("active"));
+              this.parentElement.classList.add("active");
+
               // Show GLBB, hide others
-              if (pendulumSection) pendulumSection.style.display = 'none';
-              if (glbbSection) glbbSection.style.display = 'block';
-              window.location.hash = 'glbb';
-              
+              if (pendulumSection) pendulumSection.style.display = "none";
+              if (glbSection) glbSection.style.display = "none";
+              if (glbbSection) glbbSection.style.display = "block";
+              window.location.hash = "glbb";
+
               // Initialize GLBB if not already initialized
               setTimeout(() => {
-                if (typeof initGLBB === 'function' && !glbbRenderer) {
+                if (typeof initGLBB === "function" && !glbbRenderer) {
                   initGLBB();
                 }
-                window.dispatchEvent(new Event('resize'));
+                window.dispatchEvent(new Event("resize"));
               }, 100);
-              
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            else {
-              // For unimplemented sections
-              e.preventDefault();
-              showNotification('Simulasi ini belum diimplementasikan. Coming soon! 🚀');
+
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }
           });
         });
