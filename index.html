@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Gerak Fisika - Tugas 3 Pengganti UTS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Simulasi Gerak Fisika</h1>
+            <p class="subtitle">Tugas 3 Pengganti UTS - Grafika Komputer</p>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="navigation">
+        <div class="container">
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#pendulum" class="nav-link">Gerak Osilasi Pendulum</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#projectile" class="nav-link">Gerak Parabola</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#circular" class="nav-link">Gerak Melingkar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#harmonic" class="nav-link">Gerak Harmonik Sederhana</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#wave" class="nav-link">Gerak Gelombang</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Title -->
+            <h2 class="section-title">Gerak Osilasi Pendulum</h2>
+            
+            <!-- Simulation Section -->
+            <section class="simulation-section">
+                <div class="simulation-container">
+                    <!-- Canvas Area -->
+                    <div class="canvas-wrapper">
+                        <canvas id="pendulumCanvas" class="simulation-canvas"></canvas>
+                        <div class="canvas-controls">
+                            <button class="control-btn start-btn" id="startBtn">
+                                <span class="btn-icon">▶</span> Mulai
+                            </button>
+                            <button class="control-btn pause-btn" id="pauseBtn">
+                                <span class="btn-icon">⏸</span> Jeda
+                            </button>
+                            <button class="control-btn reset-btn" id="resetBtn">
+                                <span class="btn-icon">↻</span> Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Panel -->
+                    <div class="parameter-panel">
+                        <h3 class="panel-title">Parameter Simulasi</h3>
+                        
+                        <div class="parameter-group">
+                            <div class="parameter-item">
+                                <label for="amplitude" class="parameter-label">
+                                    <span class="label-text">Amplitudo (Sudut Awal)</span>
+                                    <span class="label-unit">derajat (°)</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="range" id="amplitude" class="parameter-slider" 
+                                           min="5" max="90" value="30" step="5">
+                                    <input type="number" id="amplitudeValue" class="parameter-input" 
+                                           min="5" max="90" value="30" step="5">
+                                </div>
+                                <p class="parameter-description">
+                                    Sudut simpangan maksimum dari posisi setimbang
+                                </p>
+                            </div>
+
+                            <div class="parameter-item">
+                                <label for="length" class="parameter-label">
+                                    <span class="label-text">Panjang Tali</span>
+                                    <span class="label-unit">meter (m)</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="range" id="length" class="parameter-slider" 
+                                           min="0.5" max="5" value="2" step="0.1">
+                                    <input type="number" id="lengthValue" class="parameter-input" 
+                                           min="0.5" max="5" value="2" step="0.1">
+                                </div>
+                                <p class="parameter-description">
+                                    Jarak dari titik gantung ke pusat massa beban
+                                </p>
+                            </div>
+
+                            <div class="parameter-item">
+                                <label for="mass" class="parameter-label">
+                                    <span class="label-text">Massa Beban</span>
+                                    <span class="label-unit">kilogram (kg)</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="range" id="mass" class="parameter-slider" 
+                                           min="0.1" max="5" value="1" step="0.1">
+                                    <input type="number" id="massValue" class="parameter-input" 
+                                           min="0.1" max="5" value="1" step="0.1">
+                                </div>
+                                <p class="parameter-description">
+                                    Berat beban yang digantung (tidak mempengaruhi periode)
+                                </p>
+                            </div>
+
+                            <div class="parameter-divider"></div>
+
+                            <div class="calculated-values">
+                                <h4 class="calculated-title">Nilai Terhitung</h4>
+                                <div class="calculated-item">
+                                    <span class="calc-label">Periode (T):</span>
+                                    <span class="calc-value" id="periodValue">2.84 s</span>
+                                </div>
+                                <div class="calculated-item">
+                                    <span class="calc-label">Frekuensi (f):</span>
+                                    <span class="calc-value" id="frequencyValue">0.35 Hz</span>
+                                </div>
+                                <div class="calculated-item">
+                                    <span class="calc-label">Frekuensi Sudut (ω):</span>
+                                    <span class="calc-value" id="angularFreqValue">2.21 rad/s</span>
+                                </div>
+                            </div>
+
+                            <div class="parameter-divider"></div>
+
+                            <div class="info-box">
+                                <h4 class="info-title">💡 Informasi</h4>
+                                <p class="info-text">
+                                    Sesuaikan parameter di atas untuk melihat bagaimana 
+                                    perubahan nilai mempengaruhi gerak pendulum. 
+                                    Perhatikan bahwa massa tidak mempengaruhi periode ayunan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theory Section -->
+            <section class="theory-section">
+                <h2 class="section-title">Teori</h2>
+                <div class="theory-content">
+                    <div class="theory-card">
+                        <h3>Pengertian</h3>
+                        <p>
+                            Pendulum sederhana adalah suatu sistem yang terdiri dari sebuah massa (beban) 
+                            yang digantung pada tali atau batang ringan dengan panjang tertentu, dan dapat 
+                            berayun bebas di bawah pengaruh gravitasi.
+                        </p>
+                    </div>
+
+                    <div class="theory-card">
+                        <h3>Rumus-Rumus Penting</h3>
+                        <div class="formula-group">
+                            <div class="formula-item">
+                                <h4>Periode (T)</h4>
+                                <div class="formula">
+                                    T = 2π √(L/g)
+                                </div>
+                                <p class="formula-description">
+                                    di mana: T = periode (s), L = panjang tali (m), g = percepatan gravitasi (9.8 m/s²)
+                                </p>
+                            </div>
+
+                            <div class="formula-item">
+                                <h4>Frekuensi (f)</h4>
+                                <div class="formula">
+                                    f = 1/T = 1/(2π) √(g/L)
+                                </div>
+                                <p class="formula-description">
+                                    di mana: f = frekuensi (Hz)
+                                </p>
+                            </div>
+
+                            <div class="formula-item">
+                                <h4>Energi Mekanik</h4>
+                                <div class="formula">
+                                    E = mgh + ½mv²
+                                </div>
+                                <p class="formula-description">
+                                    di mana: m = massa beban (kg), h = ketinggian (m), v = kecepatan (m/s)
+                                </p>
+                            </div>
+
+                            <div class="formula-item">
+                                <h4>Perpindahan Sudut</h4>
+                                <div class="formula">
+                                    θ(t) = A cos(ωt + φ)
+                                </div>
+                                <p class="formula-description">
+                                    di mana: θ = sudut simpangan, A = amplitudo, ω = frekuensi sudut, φ = fase awal
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="theory-card">
+                        <h3>Karakteristik Gerak</h3>
+                        <ul class="characteristics-list">
+                            <li>Gerak periodik: berulang dalam interval waktu yang sama</li>
+                            <li>Periode tidak bergantung pada massa beban</li>
+                            <li>Periode berbanding lurus dengan akar panjang tali</li>
+                            <li>Amplitudo tidak mempengaruhi periode (untuk sudut kecil &lt; 15°)</li>
+                            <li>Terjadi pertukaran energi kinetik dan potensial</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <h3 class="footer-title">Anggota Kelompok</h3>
+            <div class="team-members">
+                <div class="member">
+                    <span class="member-name">Nicholas Abel Nathaniel</span>
+                    <span class="member-nrp">5025231098</span>
+                </div>
+                <div class="member">
+                    <span class="member-name">Athalla Abhinaya</span>
+                    <span class="member-nrp">5025231107</span>
+                </div>
+                <div class="member">
+                    <span class="member-name">Nadya Zafira</span>
+                    <span class="member-nrp">5025231310</span>
+                </div>
+            </div>
+            <p class="footer-subtitle">Tugas 3 Pengganti UTS - Grafika Komputer 2025</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
