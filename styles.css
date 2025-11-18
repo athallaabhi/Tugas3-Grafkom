@@ -371,6 +371,14 @@ body {
   position: relative;
   overflow: hidden;
   background: #f0f9ff;
+  max-width: 100%;
+}
+
+#pendulumContainer canvas,
+#glbContainer canvas,
+#glbbContainer canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 
 /* Canvas Controls */
@@ -553,6 +561,7 @@ body {
 /* Number Input Styling */
 .parameter-input {
   width: 80px;
+  max-width: 100%;
   padding: var(--spacing-xs) var(--spacing-sm);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -848,6 +857,24 @@ body {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
   }
+
+  .parameter-panel {
+    padding: var(--spacing-lg);
+  }
+
+  .input-group {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .parameter-input {
+    width: 100%;
+    max-width: none;
+  }
+
+  .parameter-slider {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -880,14 +907,24 @@ body {
 
   .input-group {
     grid-template-columns: 1fr;
+    gap: var(--spacing-xs);
   }
 
   .parameter-input {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .parameter-slider {
     width: 100%;
   }
 
   .simulation-canvas {
     height: 300px;
+  }
+
+  #pendulumContainer {
+    height: 300px !important;
   }
 
   .section-title {
@@ -897,6 +934,7 @@ body {
   .control-btn {
     min-width: 80px;
     padding: var(--spacing-sm);
+    font-size: 0.85rem;
   }
 
   .member-card {
@@ -909,6 +947,28 @@ body {
 
   .member-nrp {
     font-size: 0.85rem;
+  }
+
+  .canvas-wrapper {
+    padding: var(--spacing-md);
+  }
+
+  .panel-title {
+    font-size: 1.25rem;
+  }
+
+  .parameter-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .label-text {
+    font-size: 0.95rem;
+  }
+
+  .label-unit {
+    font-size: 0.8rem;
   }
 }
 
