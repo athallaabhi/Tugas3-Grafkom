@@ -321,13 +321,30 @@ body {
     border: 1px solid var(--border-color);
 }
 
+#pendulumContainer {
+    width: 100%;
+    height: 100%;
+    min-width: 800px;
+    min-height: 600px;
+    background: #001f3f !important;
+}
+
+#pendulumContainer canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    border-radius: var(--radius-md);
+}
+
 .simulation-canvas {
     width: 100%;
     height: 600px;
     border-radius: var(--radius-md);
-    background: linear-gradient(to bottom, #f0f9ff 0%, #e0f2fe 100%);
     border: 2px solid var(--border-color);
     display: block;
+    position: relative;
+    overflow: hidden;
+    background: #f0f9ff;
 }
 
 /* Canvas Controls */

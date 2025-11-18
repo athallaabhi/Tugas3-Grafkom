@@ -1,104 +1,478 @@
 // ===================================
-// Script untuk UI Interaktivity
-// Belum ada implementasi simulasi
+// THREE.js 3D Pendulum Simulation
 // ===================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi Canvas
-    initializeCanvas();
-    
-    // Setup Parameter Synchronization
-    setupParameterSync();
-    
-    // Setup Control Buttons
-    setupControlButtons();
-    
-    // Calculate Initial Values
-    updateCalculatedValues();
-});
+let scene, camera, renderer;
+let pendulumGroup, ropeLineGeometry, sphere;
+let ropeVertices;
+let angleArc = null; // Store arc reference
 
-// ===================================
-// Canvas Initialization
-// ===================================
-function initializeCanvas() {
-    const canvas = document.getElementById('pendulumCanvas');
-    const ctx = canvas.getContext('2d');
+// Simulation state
+let isSimulating = false;
+let isPaused = false;
+let time = 0;
+
+// Physics parameters
+let amplitude = 30; // degrees
+let ropeLength = 2; // meters
+let mass = 1; // kg
+const g = 9.8; // gravitational acceleration
+
+// Helper function to adjust camera based on rope length
+function adjustCameraForRopeLength() {
+    if (!camera) return;
     
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Calculate distance needed to see full pendulum
+    const pivotY = 0.8;
+    const bottomY = pivotY - ropeLength;
+    const distance = Math.max(2.5, ropeLength * 1.8);
     
-    // Draw placeholder
-    drawPlaceholder(ctx, canvas.width, canvas.height);
-    
-    // Redraw on window resize
-    window.addEventListener('resize', function() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        drawPlaceholder(ctx, canvas.width, canvas.height);
-    });
+    // Position camera at angle to see pendulum from side
+    camera.position.set(distance * 0.8, pivotY - 0.3, distance * 0.8);
+    camera.lookAt(0, pivotY - ropeLength * 0.5, 0);
+    console.log('Camera adjusted for rope length:', ropeLength);
 }
 
-function drawPlaceholder(ctx, width, height) {
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+// Helper function to create angle arc (protractor) - 180 degrees with 0 at bottom
+function createAngleArc() {
+    // Create group to hold arc and labels
+    if (!angleArc) {
+        angleArc = new THREE.Group();
+        pendulumGroup.add(angleArc);
+    } else {
+        // Clear existing children
+        while(angleArc.children.length > 0) {
+            angleArc.remove(angleArc.children[0]);
+        }
+    }
     
-    // Draw message
-    ctx.font = '24px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#64748b';
+    const arcRadius = ropeLength * 0.5;
+    const arcColor = 0x00ccff;
+    
+    // Draw main semicircle arc from -PI to 0 (180 degrees, bottom is 0)
+    const arcCurve = new THREE.EllipseCurve(
+        0, 0,                    // center
+        arcRadius, arcRadius,    // radius
+        -Math.PI, 0,             // start angle (-180°), end angle (0°)
+        false,                   // clockwise
+        0                        // rotation
+    );
+    
+    const arcPoints = arcCurve.getPoints(256);
+    const arcGeometry = new THREE.BufferGeometry().setFromPoints(arcPoints);
+    const arcMaterial = new THREE.LineBasicMaterial({ color: arcColor, linewidth: 3 });
+    const arcLine = new THREE.Line(arcGeometry, arcMaterial);
+    arcLine.position.z = 0.05;
+    angleArc.add(arcLine);
+    
+    // Draw diameter line at bottom (0 degrees position)
+    const diameterGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-arcRadius * 1.1, 0, 0.05),
+        new THREE.Vector3(arcRadius * 1.1, 0, 0.05)
+    ]);
+    const diameterLine = new THREE.Line(diameterGeom, arcMaterial);
+    angleArc.add(diameterLine);
+    
+    // Add angle markers every 15 degrees
+    for (let deg = 0; deg <= 180; deg += 15) {
+        // Convert to arc angle: 0° is at bottom (Math.PI/2 in ellipse curve)
+        // -90° is at left (-Math.PI in ellipse), +90° is at right (0 in ellipse)
+        const arcAngle = Math.PI - (deg * Math.PI / 180);
+        
+        const outerX = arcRadius * Math.cos(arcAngle);
+        const outerY = arcRadius * Math.sin(arcAngle);
+        const innerX = (arcRadius - 0.15) * Math.cos(arcAngle);
+        const innerY = (arcRadius - 0.15) * Math.sin(arcAngle);
+        
+        // Draw tick mark
+        const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(innerX, innerY, 0.05),
+            new THREE.Vector3(outerX, outerY, 0.05)
+        ]);
+        const tickLine = new THREE.Line(tickGeometry, arcMaterial);
+        angleArc.add(tickLine);
+        
+        // Add labels for major angles
+        if (deg % 30 === 0) {
+            const labelRadius = arcRadius + 0.35;
+            const labelX = labelRadius * Math.cos(arcAngle);
+            const labelY = labelRadius * Math.sin(arcAngle);
+            
+            // Determine label text: 0 at bottom, -90 at left, +90 at right
+            let labelText;
+            if (deg === 0) labelText = '0°';
+            else if (deg === 90) labelText = '±90°';
+            else if (deg === 180) labelText = '±180°';
+            else if (deg < 90) labelText = '+' + deg + '°';
+            else labelText = '-' + deg + '°';
+            
+            const textObj = createTextLabel(labelText, labelX, labelY, 0.06);
+            if (textObj) angleArc.add(textObj);
+        }
+    }
+    
+    // Position arc at pivot
+    angleArc.position.set(0, 0.8, 0);
+    console.log('180° Protractor arc created');
+}
+
+// Helper function to create 3D text label
+function createTextLabel(text, x, y, z) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgb(0, 204, 255)';
+    ctx.font = 'bold 40px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Canvas Simulasi', width / 2, height / 2 - 20);
+    ctx.fillText(text + '°', 64, 64);
     
-    ctx.font = '16px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('(Implementasi akan ditambahkan)', width / 2, height / 2 + 20);
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(0.3, 0.3, 0.3);
+    sprite.position.set(x, y, z);
+    return sprite;
+}
+
+// Wait for THREE.js to be loaded
+function waitForThreeJS() {
+    if (typeof THREE === 'undefined') {
+        console.log('THREE not loaded yet, waiting...');
+        setTimeout(waitForThreeJS, 100);
+        return;
+    }
+    
+    console.log('THREE.js loaded successfully');
+    
+    // Wait for DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                console.log('DOM ready, initializing...');
+                initThreeJS();
+                setupParameterSync();
+                setupControlButtons();
+                updateCalculatedValues();
+                animate();
+            } catch (error) {
+                console.error('Error initializing simulation:', error);
+                console.error('Stack:', error.stack);
+            }
+        });
+    } else {
+        // DOM already loaded
+        try {
+            console.log('DOM already ready, initializing...');
+            initThreeJS();
+            setupParameterSync();
+            setupControlButtons();
+            updateCalculatedValues();
+            animate();
+        } catch (error) {
+            console.error('Error initializing simulation:', error);
+            console.error('Stack:', error.stack);
+        }
+    }
+}
+
+// Start waiting for THREE.js
+waitForThreeJS();
+
+// ===================================
+// THREE.JS Initialization
+// ===================================
+function initThreeJS() {
+    console.log('initThreeJS called');
+    
+    const container = document.getElementById('pendulumContainer');
+    if (!container) {
+        console.error('Container not found!');
+        return;
+    }
+    
+    // Get container dimensions
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 600;
+    console.log('Container size:', width, 'x', height);
+    
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x001f3f);
+    console.log('Scene created');
+    
+    // Camera - Perspective for 3D effect
+    // Adjust based on rope length so we can always see the full pendulum
+    const maxDistance = Math.max(2, ropeLength * 1.5);
+    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.position.set(2.5, 0.8, 2.5);
+    camera.lookAt(0, 0.5, 0);
+    console.log('Camera created (Perspective), looking at pendulum');
+    
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    console.log('Renderer created');
+    
+    // Clear container and append renderer
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
+    console.log('Canvas appended to container');
+    
+    // Lighting for 3D effect
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+    console.log('Lighting added');
+    
+    // Add grid helper instead of axes
+    const gridHelper = new THREE.GridHelper(10, 20, 0x444444, 0x888888);
+    gridHelper.position.y = -5;
+    scene.add(gridHelper);
+    console.log('Grid helper added');
+    
+    createPendulum();
+    
+    console.log('Rendering first frame');
+    renderer.render(scene, camera);
+    
+    window.addEventListener('resize', onWindowResize);
+}
+
+function createPendulum() {
+    console.log('createPendulum called');
+    
+    if (pendulumGroup) {
+        scene.remove(pendulumGroup);
+    }
+    
+    pendulumGroup = new THREE.Group();
+    scene.add(pendulumGroup);
+    console.log('Pendulum group added to scene');
+    
+    // Pivot point (support)
+    const pivotGeometry = new THREE.SphereGeometry(0.15, 32, 32);
+    const pivotMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffa500,
+        emissive: 0x330000,
+        shininess: 100
+    });
+    const pivot = new THREE.Mesh(pivotGeometry, pivotMaterial);
+    pivot.position.y = 0.8;
+    pendulumGroup.add(pivot);
+    console.log('Pivot added');
+    
+    // Rope - using tube geometry for 3D cylinder
+    const ropeLength = 1.2;
+    const ropeTubeRadius = 0.01;
+    
+    // Create rope as a tube from pivot to sphere position
+    ropeVertices = [
+        new THREE.Vector3(0, 0.8, 0),
+        new THREE.Vector3(0, 0.8 - ropeLength, 0)
+    ];
+    
+    // Store for later updates
+    window.ropeStartPos = new THREE.Vector3(0, 0.8, 0);
+    window.ropeEndPos = new THREE.Vector3(0, 0.8 - ropeLength, 0);
+    
+    // Create rope using LatheGeometry or TubeGeometry
+    const ropeCurve = new THREE.LineCurve3(ropeVertices[0], ropeVertices[1]);
+    const ropeGeometry = new THREE.TubeGeometry(ropeCurve, 8, ropeTubeRadius, 8, false);
+    const ropeMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff3333,
+        emissive: 0x330000,
+        shininess: 30
+    });
+    window.ropeMesh = new THREE.Mesh(ropeGeometry, ropeMaterial);
+    pendulumGroup.add(window.ropeMesh);
+    console.log('Rope added');
+    
+    // Sphere (Pendulum Bob)
+    const sphereGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+    const sphereMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffff00,
+        emissive: 0x333300,
+        shininess: 120
+    });
+    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.y = 0.8 - ropeLength;
+    pendulumGroup.add(sphere);
+    console.log('Sphere added at position:', sphere.position);
+    
+    // Arc helper to show angle
+    createAngleArc();
+    
+    console.log('Total objects in pendulum group:', pendulumGroup.children.length);
+    
+    // Adjust camera to fit the new rope length
+    adjustCameraForRopeLength();
+}
+
+// ===================================
+// Physics Simulation
+// ===================================
+function updatePendulumPosition(currentTime) {
+    if (!sphere) return;
+    
+    const amplitudeRad = (amplitude * Math.PI) / 180;
+    const period = 2 * Math.PI * Math.sqrt(ropeLength / g);
+    const angularFrequency = (2 * Math.PI) / period;
+    
+    const dampingFactor = 0.995;
+    const angle = amplitudeRad * Math.cos(angularFrequency * currentTime) * 
+                  Math.pow(dampingFactor, currentTime * 10);
+    
+    // Calculate position
+    const xPosition = ropeLength * Math.sin(angle);
+    const yPosition = 0.8 - ropeLength * Math.cos(angle);
+    
+    sphere.position.x = xPosition;
+    sphere.position.y = yPosition;
+    
+    // Update angle indicator line on protractor (show current angle)
+    if (angleArc && pendulumGroup) {
+        // Remove old angle indicator if exists
+        const oldIndicator = angleArc.children.find(child => child.userData && child.userData.isAngleIndicator);
+        if (oldIndicator) angleArc.remove(oldIndicator);
+        
+        // Add new angle indicator line from center to current angle
+        const arcRadius = ropeLength * 0.6;
+        const indicatorX = arcRadius * Math.cos(angle);
+        const indicatorY = arcRadius * Math.sin(angle);
+        
+        const indicatorGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0.06),
+            new THREE.Vector3(indicatorX, indicatorY, 0.06)
+        ]);
+        const indicatorMaterial = new THREE.LineBasicMaterial({ color: 0xff6600, linewidth: 3 });
+        const indicatorLine = new THREE.Line(indicatorGeometry, indicatorMaterial);
+        indicatorLine.userData.isAngleIndicator = true;
+        angleArc.add(indicatorLine);
+        
+        // Update angle value display label at the end of indicator
+        const oldLabel = angleArc.children.find(child => child.userData && child.userData.isAngleLabel);
+        if (oldLabel) angleArc.remove(oldLabel);
+        
+        const labelX = (arcRadius + 0.35) * Math.cos(angle);
+        const labelY = (arcRadius + 0.35) * Math.sin(angle);
+        const angleDisplay = Math.round((angle * 180) / Math.PI);
+        
+        const label = createTextLabel(angleDisplay.toString(), labelX, labelY, 0.07);
+        if (label) {
+            label.userData.isAngleLabel = true;
+            label.scale.set(0.25, 0.25, 0.25);
+            angleArc.add(label);
+        }
+    }
+    
+    // Update rope geometry to connect pivot to sphere
+    if (window.ropeMesh && pendulumGroup) {
+        // Remove old rope
+        pendulumGroup.remove(window.ropeMesh);
+        
+        // Create new rope from pivot to sphere
+        const ropeCurve = new THREE.LineCurve3(
+            new THREE.Vector3(0, 0.8, 0),
+            new THREE.Vector3(xPosition, yPosition, 0)
+        );
+        const ropeGeometry = new THREE.TubeGeometry(ropeCurve, 8, 0.01, 8, false);
+        const ropeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xff3333,
+            emissive: 0x330000,
+            shininess: 30
+        });
+        window.ropeMesh = new THREE.Mesh(ropeGeometry, ropeMaterial);
+        pendulumGroup.add(window.ropeMesh);
+    }
+}
+
+// ===================================
+// Animation Loop
+// ===================================
+function animate() {
+    requestAnimationFrame(animate);
+    
+    if (isSimulating && !isPaused) {
+        time += 0.016;
+        updatePendulumPosition(time);
+    }
+    
+    renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+    const container = document.getElementById('pendulumContainer');
+    if (container) {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+    }
 }
 
 // ===================================
 // Parameter Synchronization
 // ===================================
 function setupParameterSync() {
-    // Amplitude
     const amplitudeSlider = document.getElementById('amplitude');
     const amplitudeInput = document.getElementById('amplitudeValue');
     
     amplitudeSlider.addEventListener('input', function() {
+        amplitude = parseFloat(this.value);
         amplitudeInput.value = this.value;
         updateCalculatedValues();
+        if (isSimulating) time = 0;
     });
     
     amplitudeInput.addEventListener('input', function() {
+        amplitude = parseFloat(this.value);
         amplitudeSlider.value = this.value;
         updateCalculatedValues();
+        if (isSimulating) time = 0;
     });
     
-    // Length
     const lengthSlider = document.getElementById('length');
     const lengthInput = document.getElementById('lengthValue');
     
     lengthSlider.addEventListener('input', function() {
+        ropeLength = parseFloat(this.value);
         lengthInput.value = this.value;
         updateCalculatedValues();
+        createPendulum();
+        if (isSimulating) time = 0;
     });
     
     lengthInput.addEventListener('input', function() {
+        ropeLength = parseFloat(this.value);
         lengthSlider.value = this.value;
         updateCalculatedValues();
+        createPendulum();
+        if (isSimulating) time = 0;
     });
     
-    // Mass
     const massSlider = document.getElementById('mass');
     const massInput = document.getElementById('massValue');
     
     massSlider.addEventListener('input', function() {
+        mass = parseFloat(this.value);
         massInput.value = this.value;
         updateCalculatedValues();
+        createPendulum();
     });
     
     massInput.addEventListener('input', function() {
+        mass = parseFloat(this.value);
         massSlider.value = this.value;
         updateCalculatedValues();
+        createPendulum();
     });
 }
 
@@ -106,19 +480,10 @@ function setupParameterSync() {
 // Calculate Physics Values
 // ===================================
 function updateCalculatedValues() {
-    const length = parseFloat(document.getElementById('lengthValue').value);
-    const g = 9.8; // gravitasi (m/s²)
-    
-    // Hitung periode: T = 2π√(L/g)
-    const period = 2 * Math.PI * Math.sqrt(length / g);
-    
-    // Hitung frekuensi: f = 1/T
+    const period = 2 * Math.PI * Math.sqrt(ropeLength / g);
     const frequency = 1 / period;
-    
-    // Hitung frekuensi sudut: ω = 2πf
     const angularFrequency = 2 * Math.PI * frequency;
     
-    // Update tampilan
     document.getElementById('periodValue').textContent = period.toFixed(2) + ' s';
     document.getElementById('frequencyValue').textContent = frequency.toFixed(2) + ' Hz';
     document.getElementById('angularFreqValue').textContent = angularFrequency.toFixed(2) + ' rad/s';
@@ -133,21 +498,27 @@ function setupControlButtons() {
     const resetBtn = document.getElementById('resetBtn');
     
     startBtn.addEventListener('click', function() {
-        console.log('Start button clicked');
-        // TODO: Implementasi start simulasi
-        showNotification('Tombol Mulai diklik (belum diimplementasikan)');
+        isSimulating = true;
+        isPaused = false;
+        time = 0;
+        showNotification('Simulasi dimulai');
     });
     
     pauseBtn.addEventListener('click', function() {
-        console.log('Pause button clicked');
-        // TODO: Implementasi pause simulasi
-        showNotification('Tombol Jeda diklik (belum diimplementasikan)');
+        if (isSimulating) {
+            isPaused = !isPaused;
+            showNotification(isPaused ? 'Simulasi dijeda' : 'Simulasi dilanjutkan');
+        }
     });
     
     resetBtn.addEventListener('click', function() {
-        console.log('Reset button clicked');
-        // TODO: Implementasi reset simulasi
-        showNotification('Tombol Reset diklik (belum diimplementasikan)');
+        isSimulating = false;
+        isPaused = false;
+        time = 0;
+        sphere.position.y = 3 - ropeLength;
+        ropeVertices[1] = new THREE.Vector3(0, 3 - ropeLength, 0);
+        ropeLineGeometry.setFromPoints(ropeVertices);
+        showNotification('Simulasi direset');
     });
 }
 
@@ -155,7 +526,6 @@ function setupControlButtons() {
 // Notification Helper
 // ===================================
 function showNotification(message) {
-    // Buat elemen notifikasi
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -169,13 +539,12 @@ function showNotification(message) {
         z-index: 1000;
         animation: slideIn 0.3s ease-out;
         font-weight: 500;
+        font-family: 'Segoe UI', sans-serif;
     `;
     notification.textContent = message;
     
-    // Tambahkan ke body
     document.body.appendChild(notification);
     
-    // Hapus setelah 3 detik
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease-in';
         setTimeout(() => {
@@ -183,30 +552,3 @@ function showNotification(message) {
         }, 300);
     }, 3000);
 }
-
-// Tambahkan keyframe animations via style
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
